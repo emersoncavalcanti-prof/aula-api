@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 
 class UserController extends Controller
 {
@@ -60,9 +61,9 @@ class UserController extends Controller
     {
         // Validate the request data
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|min:2|max:255',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6|confirmed',
+            'password' => ['required', 'confirmed', Password::min(6)->letters()->numbers()->symbols()->uncompromised()->mixedCase()],
         ]);
 
         $user = User::create([
@@ -110,7 +111,7 @@ class UserController extends Controller
         $request->validate([
             'name' => 'sometimes|required|string|max:255',
             'email' => 'sometimes|required|email|unique:users,email,' . $id,
-            'password' => 'sometimes|required|string|min:6|confirmed',
+            'password' => ['required', 'confirmed', Password::min(6)->letters()->numbers()->symbols()->uncompromised()->mixedCase()],
         ]);
 
         if ($request->has('name')) {
@@ -137,6 +138,7 @@ class UserController extends Controller
     public function validarToken(Request $request)
     {
         $user = $request->user();
+        
         if ($user) {
             return response()->json(
                 [
